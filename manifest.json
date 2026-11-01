@@ -1,17 +1,19 @@
 {
-  "name": "Mohalla Helper — Barpeta Local Services",
+  "id": "./",
+  "name": "Mohalla Helper",
   "short_name": "Mohalla Helper",
-  "description": "Find local services in Barpeta, Assam. Assamese and English.",
-  "lang": "en-IN",
-  "start_url": "./",
+  "description": "Find local services and list your service in Barpeta, Assam. Assamese and English support.",
+  "start_url": "./?source=app",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#F5F7F6",
-  "theme_color": "#0F5C4D",
-  "categories": ["lifestyle", "utilities"],
+  "background_color": "#09264F",
+  "theme_color": "#09264F",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["utilities", "lifestyle"],
   "icons": [
-    {"src":"icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
   ]
 }
