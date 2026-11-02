@@ -151,9 +151,9 @@ nav button span{font-size:20px}nav button.on{color:var(--tx);font-weight:700}
   <div id="page4" style="display:none">
     <div class="ptitle"><button onclick="go(0)" aria-label="Back">‹</button><h3 data-i="helpT">Help</h3></div>
     <div class="hc"><b data-i="h1T">How to find a service</b><ol><li data-i="h1a">Choose your village at the top of the page.</li><li data-i="h1b">Tap a service, for example Electrician.</li><li data-i="h1c">Tap Call or WhatsApp to talk to the provider directly.</li></ol></div>
-    <div class="hc" id="hinst"><b data-i="instT">Install the app</b><p data-i="instP">Install Mohalla Helper on your phone to open it like a normal app.</p><button class="go" id="hibtn" data-i="instB" onclick="doInstall()">Install</button><p id="hidone" style="display:none;font-weight:700;color:var(--wa)" data-i="instD">App is installed on this phone ✔</p><p data-i="instA">Android (Chrome): tap the ⋮ menu, then ‘Install app’ or ‘Add to Home screen’.</p><p data-i="instI">iPhone (Safari): tap the Share button, then ‘Add to Home Screen’.</p></div>
+    <div class="hc" id="hinst"><b data-i="instT">Install the app</b><p data-i="instP">InstallUrban on your phone to open it like a normal app.</p><button class="go" id="hibtn" data-i="instB" onclick="doInstall()">Install</button><p id="hidone" style="display:none;font-weight:700;color:var(--wa)" data-i="instD">App is installed on this phone ✔</p><p data-i="instA">Android (Chrome): tap the ⋮ menu, then ‘Install app’ or ‘Add to Home screen’.</p><p data-i="instI">iPhone (Safari): tap the Share button, then ‘Add to Home Screen’.</p></div>
     <div class="hc"><b data-i="h3T">For service providers</b><p data-i="h3a">Tap ‘List service’ and fill the form. Your name and phone number will be shown to customers.</p></div>
-    <div class="hc"><b data-i="h4T">Good to know</b><p data-i="h4a">Mohalla Helper only lists providers. There is no booking or payment here. Talk to the provider and agree on the price yourself.</p></div>
+    <div class="hc"><b data-i="h4T">Good to know</b><p data-i="h4a">Urban only lists providers. There is no booking or payment here. Talk to the provider and agree on the price yourself.</p></div>
     <div class="hc"><b data-i="h5T">Emergency numbers</b><div class="acts" style="margin-top:8px"><a href="tel:112">📞 112</a><a href="tel:108">🚑 108</a><a href="tel:100">👮 100</a><a href="tel:101">🔥 101</a></div></div>
     <div class="hc" id="hsupc"><b data-i="supT">Report a problem</b><p data-i="supP">Wrong or missing provider, or any problem with the site? Message us.</p><a class="go" id="hsup" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--wa)" data-i="supB">Message on WhatsApp</a></div>
     <p class="note"><a href="privacy.html" data-i="priv" style="color:var(--lk)">Privacy &amp; consent</a></p>
@@ -271,7 +271,7 @@ function renderProv(){
 function jump(k){closeMenu();var e=document.getElementById("sec"+k);if(e)window.scrollTo({top:e.getBoundingClientRect().top+window.scrollY-70,behavior:"smooth"})}
 function openMenu(){document.getElementById("msheet").innerHTML='<h4 style="margin:0 0 12px;font-size:18px">'+T("menu")+'</h4>'+SECS.map(function(a,k){return'<button class="li" style="width:100%;margin:0 0 8px;background:var(--bg)" onclick="jump('+k+')"><span>'+esc(a)+'</span><u>›</u></button>'}).join("");document.getElementById("bg").style.display="block";document.getElementById("msheet").style.display="block"}
 function closeMenu(){document.getElementById("bg").style.display="none";document.getElementById("msheet").style.display="none"}
-function share(){var u=location.href.split("#")[0];if(navigator.share){navigator.share({title:"Mohalla Helper",url:u}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(u).then(function(){toast("Link copied")})}}
+function share(){var u=location.href.split("#")[0];if(navigator.share){navigator.share({title:"Urban",url:u}).catch(function(){})}else if(navigator.clipboard){navigator.clipboard.writeText(u).then(function(){toast("Link copied")})}}
 function openProv(n){curSvc=n;if(view!==2)prev=view;show(2);if(provState==="fail"||provState==="idle")loadProv(renderProv);renderProv()}
 function render(){
   document.documentElement.lang=lang==="as"?"as":"en";
@@ -303,7 +303,7 @@ function updInstall(){
   if(hb)hb.style.display=st?"none":"";
   if(hd)hd.style.display=st?"block":"none";
   if(sc)sc.style.display=SUPPORT_WA?"":"none";
-  if(sp&&SUPPORT_WA)sp.href="https://wa.me/"+SUPPORT_WA+"?text="+encodeURIComponent("Mohalla Helper – help / report:\n");
+  if(sp&&SUPPORT_WA)sp.href="https://wa.me/"+SUPPORT_WA+"?text="+encodeURIComponent("Urban – help / report:\n");
 }
 function hideBanner(){bannerOff=true;updInstall()}
 function doInstall(){
