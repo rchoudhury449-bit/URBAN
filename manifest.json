@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Mohalla Helper",
-  "short_name": "Mohalla Helper",
+  "name": "URBAN",
+  "short_name": "URBAN",
   "description": "Find local services and list your service in Barpeta, Assam. Assamese and English support.",
   "start_url": "./?source=app",
   "scope": "./",
