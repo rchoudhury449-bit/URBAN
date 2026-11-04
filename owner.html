@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Urban – Owner tool</title>
+<style>body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;margin:0;background:#f4f5f7;color:#14181f}main{max-width:520px;margin:0 auto;padding:16px}h1{font-size:20px;margin:6px 0}small{color:#667}textarea{width:100%;min-height:150px;margin-top:12px;font:inherit;padding:10px;border:1px solid #ccd3df;border-radius:10px}button,a.b{display:block;width:100%;margin-top:10px;padding:13px;border:0;border-radius:10px;font:inherit;font-weight:700;color:#fff;background:#14418a;text-align:center;text-decoration:none;cursor:pointer}a.b{background:#1faa59}pre{white-space:pre-wrap;word-break:break-word;background:#fff;border:1px solid #dde;border-radius:10px;padding:12px;font:14px/1.5 system-ui}</style></head>
+<body><main>
+<h1>Urban – Owner tool</h1>
+<small>Customer ka WhatsApp message yahan paste karo. Kuch bhi save ya send nahi hota, sab aapke phone mein hi hota hai.</small>
+<textarea id="t" placeholder="Customer request yahan paste karo"></textarea>
+<button onclick="mk(1)">1. Provider ke liye message (bina naam aur phone number)</button>
+<button onclick="mk(2)" style="background:#6b7280">2. Job confirm hone ke baad (customer ke number ke saath)</button>
+<pre id="o" style="display:none"></pre>
+<button id="c" onclick="cp()" style="display:none;background:#09264F">Copy</button>
+<a class="b" id="w" style="display:none" target="_blank" rel="noopener">WhatsApp par bhejo (contact chuno)</a>
+<hr style="margin:26px 0 10px;border:0;border-top:1px solid #ccd">
+<h1>Naya provider code</h1>
+<small>Provider verify hone ke baad uska personal access code banao. Code provider ko do. Neeche wali hash line Google Sheet mein us provider ki row ke <b>Access Code Hash</b> column mein paste karo.</small>
+<input id="pn" placeholder="Provider ka naam (sirf yaad rakhne ke liye)" style="width:100%;margin-top:12px;padding:12px;border:1px solid #ccd3df;border-radius:10px;font:inherit">
+<button onclick="gen()">Code banao</button>
+<pre id="g" style="display:none"></pre>
+<script>
+function gen(){
+  var A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",b=new Uint8Array(10),c="",i;crypto.getRandomValues(b);
+  for(i=0;i<10;i++)c+=A[b[i]%A.length];
+  crypto.subtle.digest("SHA-256",new TextEncoder().encode(c)).then(function(d){
+    var h=Array.prototype.map.call(new Uint8Array(d),function(x){return("0"+x.toString(16)).slice(-2)}).join("");
+    var g=document.getElementById("g");g.style.display="block";
+    g.textContent="Provider: "+(document.getElementById("pn").value||"-")+"\nCODE (provider ko do): "+c.slice(0,5)+"-"+c.slice(5)+"\n\nGoogle Sheet mein provider ki row ke 'Access Code Hash' column mein ye paste karo:\n"+h;
+  });
+}
+
+function mk(m){
+  var t=document.getElementById("t").value.trim(),L=t.split(/\r?\n/).map(function(x){return x.trim()}).filter(Boolean),out=[];
+  if(!L.length)return;
+  var head=/^urban\b.*request/i;
+  if(m===1){
+    L.forEach(function(x){if(/^(name|phone|mobile|customer)\s*:/i.test(x)||head.test(x))return;out.push(x.replace(/\+?\d[\d\s-]{8,}\d/g,"[hidden]"))});
+    out=["Urban – new job"].concat(out,["","Reply YES if you can go. The customer’s contact will be shared by Urban after you confirm."]);
+  }else{
+    out=["Urban – job confirmed"].concat(L.filter(function(x){return !head.test(x)}));
+  }
+  var s=out.join("\n"),o=document.getElementById("o");
+  o.textContent=s;o.style.display="block";
+  document.getElementById("c").style.display="block";
+  var w=document.getElementById("w");w.style.display="block";w.href="https://wa.me/?text="+encodeURIComponent(s);
+}
+function cp(){var s=document.getElementById("o").textContent;if(navigator.clipboard)navigator.clipboard.writeText(s).then(function(){document.getElementById("c").textContent="Copied ✔"})}
+</script>
+</main></body></html>
