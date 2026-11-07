@@ -1,7 +1,7 @@
 /* Mohalla Helper service worker.
    Pages: network first (so site updates show up immediately), cache only as offline backup.
    Change CACHE name (mh-v2, mh-v3...) if you ever want to force-clear old copies. */
-var CACHE = "mh-v4";
+var CACHE = "mh-v5";
 var CORE = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (e) {
@@ -28,7 +28,7 @@ self.addEventListener("fetch", function (e) {
   if (url.pathname.indexOf("providers-access.json") > -1) return;   /* always fresh: new / removed provider codes */           /* Google Sheet, fonts etc. go straight to the network */
   if (req.mode === "navigate" || (req.headers.get("accept") || "").indexOf("text/html") > -1) {
     e.respondWith(
-      fetch(req).then(function (res) {
+      fetch(req.url, { cache: "no-cache" }).then(function (res) {   /* no-cache: always ask GitHub if the page changed, ignore the 10-minute browser copy */
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put(req, copy); });
         return res;
