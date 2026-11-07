@@ -83,6 +83,7 @@ nav button span{font-size:20px}nav button.on{color:var(--tx);font-weight:700}
 .ph{position:relative;flex:none;width:104px;height:104px;border-radius:12px;background:linear-gradient(135deg,#1a56b8,#09264F);color:#fff;display:grid;place-items:center;font-size:42px;font-weight:700;margin-bottom:14px}
 .ph a{position:absolute;left:50%;bottom:-16px;transform:translateX(-50%);background:var(--card);color:var(--lk);border:1px solid var(--line);border-radius:8px;padding:7px 18px;font-weight:700;font-size:13px;text-decoration:none;box-shadow:0 2px 6px rgba(0,0,0,.18);white-space:nowrap}
 .sk{display:block;margin:12px 16px;height:120px;border-radius:12px;background:linear-gradient(90deg,var(--chip) 25%,var(--line) 50%,var(--chip) 75%);background-size:200% 100%;animation:sh 1.2s linear infinite}
+@keyframes sl{from{transform:translateX(55px);opacity:0}to{transform:none;opacity:1}}@keyframes sr{from{transform:translateX(-55px);opacity:0}to{transform:none;opacity:1}}.sl{animation:sl .24s ease-out}.sr{animation:sr .24s ease-out}@media (prefers-reduced-motion:reduce){.sl,.sr{animation:none}}
 @keyframes sh{to{background-position:-200% 0}}
 .menu{display:none;position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:35;background:#14181f;color:#fff;border-radius:22px;padding:11px 20px;font-weight:700;font-size:14px;box-shadow:0 4px 14px rgba(0,0,0,.3)}
 #bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40;display:none}
@@ -391,7 +392,8 @@ function filter(){
 }
 function toggleLang(){lang=lang==="en"?"as":"en";render()}
 function setNav(i){for(var k=0;k<4;k++)document.getElementById("n"+k).classList.toggle("on",k===i)}
-function show(n){if(n===5&&!PA)n=4;view=n;document.getElementById("hdr").style.display=(n===2||n>=4)?"none":"";document.getElementById("menuBtn").style.display="none";closeMenu();["home","page2","page3","page4","page5","page6"].forEach(function(id,k){document.getElementById(id).style.display=k===n?"":"none"});setNav(n===2?prev:(n>=4?2:n));window.scrollTo(0,0);if(n===5)renderPro();if(n<3&&!LOCSEL)openLoc(true)}
+function tabOf(v){return v===0?0:v===1?1:v===3?3:v===2?tabOf(prev):2}
+function show(n){if(n===5&&!PA)n=4;var dir=(n===2||view===2)?0:tabOf(n)-tabOf(view);view=n;document.getElementById("hdr").style.display=(n===2||n>=4)?"none":"";document.getElementById("menuBtn").style.display="none";closeMenu();["home","page2","page3","page4","page5","page6"].forEach(function(id,k){document.getElementById(id).style.display=k===n?"":"none"});setNav(n===2?prev:(n>=4?2:n));window.scrollTo(0,0);slideIn(n,dir);if(n===5)renderPro();if(n<3&&!LOCSEL)openLoc(true)}
 function go(i){show(i);if(i===0){document.getElementById("q").value="";filter()}}
 /* ===== Install app + Help ===== */
 var dip=null,bannerOff=false;
@@ -411,20 +413,55 @@ function doInstall(){
 }
 addEventListener("beforeinstallprompt",function(e){e.preventDefault();dip=e});
 addEventListener("appinstalled",function(){dip=null;bannerOff=true;updInstall();toast(T("installed"))});
+/* ===== Slide between pages: animation + swipe left/right ===== */
+var PIDS=["home","page2","page3","page4","page5","page6"];
+function slideIn(n,dir){
+  var e=document.getElementById(PIDS[n]);if(!e)return;
+  e.classList.remove("sl","sr");
+  if(!dir)return;
+  void e.offsetWidth;
+  e.classList.add(dir>0?"sl":"sr");
+}
+function swipeTo(step){
+  var order=[0,1,PA?5:4,3],i=tabOf(view)+step;
+  if(i<0||i>=order.length)return;
+  var t=order[i];show(t);
+  if(t===0){document.getElementById("q").value="";filter()}
+}
+var sx=0,sy=0,st=0,sOk=false;
+addEventListener("touchstart",function(e){
+  sOk=false;if(e.touches.length!==1||view===2)return;
+  var t=e.target;
+  if(t.closest&&t.closest("input,textarea,select,.scroll,.acts,#locm,#msheet,#bg"))return;
+  if(document.getElementById("locm").style.display==="flex"||document.getElementById("msheet").style.display==="block")return;
+  sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();sOk=true;
+},{passive:true});
+addEventListener("touchend",function(e){
+  if(!sOk)return;sOk=false;
+  var c=e.changedTouches[0],dx=c.clientX-sx,dy=c.clientY-sy;
+  if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.7||Date.now()-st>700)return;
+  swipeTo(dx<0?1:-1);
+},{passive:true});
 /* ===== Back button: any page -> Home; on Home, press back twice to exit ===== */
 var armed=false,armT=null,guarded=false;
 function repush(){try{history.pushState({mh:"app"},"")}catch(e){}}
-function disarm(){if(!armed)return;armed=false;clearTimeout(armT);repush()}
 function guard(){if(guarded)return;guarded=true;try{history.replaceState({mh:"base"},"");history.pushState({mh:"app"},"")}catch(e){}}
-addEventListener("pointerdown",function(){guard();disarm()},{passive:true});
-addEventListener("keydown",guard);
+/* Chrome ignores history entries made without a real tap, so everything here runs on tap-release (click), never on pointerdown or timers */
+function gesture(){
+  if(!guarded){guard();return}
+  if(armed){armed=false;clearTimeout(armT);repush()}   // user kept using the app: cancel the exit and put the back-guard in place again
+}
+addEventListener("click",gesture,true);
+addEventListener("touchend",gesture,{passive:true,capture:true});
+addEventListener("keydown",gesture);
 addEventListener("popstate",function(){
   if(!guarded||armed)return;
   var ms=document.getElementById("msheet"),lm=document.getElementById("locm");
   if(ms.style.display==="block"){closeMenu();repush();return}
   if(lm.style.display==="flex"){if(LOCSEL)closeLoc();repush();return}
   if(view!==0){show(0);document.getElementById("q").value="";filter();repush();return}
-  armed=true;toast(T("exitHint"));armT=setTimeout(disarm,2200);
+  armed=true;toast(T("exitHint"));
+  armT=setTimeout(function(){armed=false;repush()},2200);   // hint expired: put the back-guard in place again (the app has had a tap by now)
 });
 render();
 checkPA();if(location.hash==="#providers")goProv();else if(!LOCSEL)openLoc(true);
