@@ -189,7 +189,7 @@ nav button span{font-size:20px}nav button.on{color:var(--tx);font-weight:700}
     <div class="hc"><b data-i="h5T">Emergency numbers</b><div class="acts" style="margin-top:8px"><a href="tel:112">📞 112</a><a href="tel:108">🚑 108</a><a href="tel:100">👮 100</a><a href="tel:101">🔥 101</a></div></div>
     <div class="hc" id="hsupc"><b data-i="supT">Report a problem</b><p data-i="supP">Wrong or missing provider, or any problem with the site? Message us.</p><a class="go" id="hsup" href="#" target="_blank" rel="noopener" style="display:block;text-align:center;text-decoration:none;background:var(--wa)" data-i="supB">Message on WhatsApp</a></div>
     <p class="note"><a href="privacy.html" data-i="priv" style="color:var(--lk)">Privacy &amp; consent</a> · <a href="terms.html" data-i="tms" style="color:var(--lk)">Terms</a> · <a href="refund.html" data-i="rfn" style="color:var(--lk)">Refund policy</a> · <a href="contact.html" data-i="cnt" style="color:var(--lk)">Contact</a></p>
-    <p class="note" style="margin-top:0">App version 6</p>
+    <p class="note" style="margin-top:0">App version 7</p>
   </div>
 </div>
 
@@ -394,7 +394,7 @@ function filter(){
 function toggleLang(){lang=lang==="en"?"as":"en";render()}
 function setNav(i){for(var k=0;k<4;k++)document.getElementById("n"+k).classList.toggle("on",k===i)}
 function tabOf(v){return v===0?0:v===1?1:v===3?3:v===2?tabOf(prev):2}
-function show(n){if(n===5&&!PA)n=4;var dir=(n===2||view===2)?0:tabOf(n)-tabOf(view);view=n;document.getElementById("hdr").style.display=(n===2||n>=4)?"none":"";document.getElementById("menuBtn").style.display="none";closeMenu();["home","page2","page3","page4","page5","page6"].forEach(function(id,k){document.getElementById(id).style.display=k===n?"":"none"});setNav(n===2?prev:(n>=4?2:n));window.scrollTo(0,0);slideIn(n,dir);if(n===5)renderPro();if(n<3&&!LOCSEL)openLoc(true)}
+function show(n,nh){if(n===5&&!PA)n=4;var old=view,dir=(n===2||view===2)?0:tabOf(n)-tabOf(view);view=n;document.getElementById("hdr").style.display=(n===2||n>=4)?"none":"";document.getElementById("menuBtn").style.display="none";closeMenu();["home","page2","page3","page4","page5","page6"].forEach(function(id,k){document.getElementById(id).style.display=k===n?"":"none"});setNav(n===2?prev:(n>=4?2:n));window.scrollTo(0,0);slideIn(n,dir);if(!nh)hist(n,old);if(n===5)renderPro();if(n<3&&!LOCSEL)openLoc(true)}
 function go(i){show(i);if(i===0){document.getElementById("q").value="";filter()}}
 /* ===== Install app + Help ===== */
 var dip=null,bannerOff=false;
@@ -443,25 +443,49 @@ addEventListener("touchend",function(e){
   if(Math.abs(dx)<70||Math.abs(dx)<Math.abs(dy)*1.7||Date.now()-st>700)return;
   swipeTo(dx<0?1:-1);
 },{passive:true});
-/* ===== Back button: any page -> Home; on Home, press back twice to exit ===== */
+/* ===== Back button =====
+   History is kept as a tiny stack:  [base] [home] [any other page]
+   - Back on any other page  -> Home
+   - Back on Home            -> "Press back again to exit" (second back within 2 seconds leaves the app)
+   Entries are only added after a real tap, because Chrome ignores entries made without one. */
 var armed=false,armT=null,guarded=false;
-function repush(){try{history.pushState({mh:"app"},"")}catch(e){}}
-function guard(){if(guarded)return;guarded=true;try{history.replaceState({mh:"base"},"");history.pushState({mh:"app"},"")}catch(e){}}
-/* Chrome ignores the back-guard if it is set up before a real tap. Swiping or scrolling is NOT a tap, so the guard is set only on a real click (or key press). */
+var HOME_ST={mh:"app",l:0};
+function pushHome(){try{history.pushState(HOME_ST,"")}catch(e){}}
+function pushPage(v){try{history.pushState({mh:"app",l:1,v:v},"")}catch(e){}}
+function guard(){
+  if(guarded)return;guarded=true;
+  try{history.replaceState({mh:"base"},"");history.pushState(HOME_ST,"")}catch(e){}
+  if(view!==0)pushPage(view);
+}
+/* called from show(): keep history in step with the page on screen */
+function hist(n,old){
+  if(!guarded||n===old)return;
+  try{
+    if(n===0){ if(history.state&&history.state.l===1)history.back() }      // popstate then lands on Home
+    else if(old===0)pushPage(n);
+    else history.replaceState({mh:"app",l:1,v:n},"");
+  }catch(e){}
+}
 function gesture(){
   if(!guarded){guard();return}
-  if(armed){armed=false;clearTimeout(armT);repush()}   // user kept using the app: cancel the exit and put the back-guard in place again
+  if(armed){armed=false;clearTimeout(armT);pushHome()}   // user kept using the app: cancel the exit, guard is back
 }
 addEventListener("click",gesture,true);
 addEventListener("keydown",gesture);
-addEventListener("popstate",function(){
+addEventListener("popstate",function(e){
   if(!guarded||armed)return;
+  var st=e.state||{},onBase=st.mh==="base";
   var ms=document.getElementById("msheet"),lm=document.getElementById("locm");
-  if(ms.style.display==="block"){closeMenu();repush();return}
-  if(lm.style.display==="flex"){if(LOCSEL)closeLoc();repush();return}
-  if(view!==0){show(0);document.getElementById("q").value="";filter();repush();return}
-  armed=true;toast(T("exitHint"));
-  armT=setTimeout(function(){armed=false;repush()},2200);   // hint expired: put the back-guard in place again (the app has had a tap by now)
+  if(ms.style.display==="block"||lm.style.display==="flex"){                 // back closes a popup first
+    if(ms.style.display==="block")closeMenu();else if(LOCSEL)closeLoc();
+    if(onBase)pushHome();else pushPage(view);                              // put back the entry that was just used
+    return;
+  }
+  if(view!==0){show(0,true);document.getElementById("q").value="";filter();if(onBase)pushHome();return}   // any page -> Home
+  if(onBase){                                                               // Home -> first back
+    armed=true;toast(T("exitHint"));
+    armT=setTimeout(function(){armed=false;pushHome()},2200);
+  }
 });
 render();
 checkPA();if(location.hash==="#providers")goProv();else if(!LOCSEL)openLoc(true);
