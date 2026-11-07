@@ -1,7 +1,7 @@
 /* Mohalla Helper service worker.
    Pages: network first (so site updates show up immediately), cache only as offline backup.
    Change CACHE name (mh-v2, mh-v3...) if you ever want to force-clear old copies. */
-var CACHE = "mh-v3";
+var CACHE = "mh-v4";
 var CORE = ["./", "index.html", "manifest.json", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", function (e) {
